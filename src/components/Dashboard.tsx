@@ -236,7 +236,7 @@ function Dashboard() {
               <div className="flex items-center">
                 <BookOpen className="h-5 w-5 text-violet-500 mr-2" />
                 <div>
-                  <p className="text-sm text-gray-500">Activities</p>
+                  <p className="text-sm text-gray-500">Sessions</p>
                   <p className="font-semibold">{activities.length}</p>
                 </div>
               </div>
@@ -258,7 +258,7 @@ function Dashboard() {
           <div className="space-y-6">
             <div className="bg-white shadow rounded-xl overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900">Log Study Activity</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Log Study Session</h3>
               </div>
               <div className="p-6">
                 <LogActivity userId={profile.id} profile={profile} onActivityLogged={handleActivityLogged} />
@@ -267,13 +267,13 @@ function Dashboard() {
 
             <div className="bg-white shadow rounded-xl overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Recent Sessions</h3>
               </div>
               <div className="divide-y divide-gray-100">
                 {activities.length === 0 ? (
                   <div className="px-6 py-8 text-center">
                     <BookOpen className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-500">No activities yet. Start logging your study sessions!</p>
+                    <p className="text-gray-500">No sessions yet.</p>
                   </div>
                 ) : (
                   activities.slice(0, 5).map((activity) => (
@@ -304,7 +304,7 @@ function Dashboard() {
               {activities.length > 5 && (
                 <div className="px-6 py-3 bg-gray-50 text-center">
                   <button className="text-sm text-violet-600 hover:text-violet-700 font-medium">
-                    View all activities
+                    View all sessions
                   </button>
                 </div>
               )}

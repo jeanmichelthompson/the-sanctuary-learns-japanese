@@ -5,7 +5,7 @@ import type React from "react"
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react"
 import { supabase } from "../supabaseClient"
-import { BookOpen, Headphones, PenTool, Info } from "lucide-react"
+import { BookOpen, Headphones, PenTool, Info, Mic } from "lucide-react"
 import { calculateXP, explainXPCalculation } from "../lib/xpCalculator"
 import { Modal, SuccessModal, ErrorModal } from "./Modal"
 
@@ -57,13 +57,16 @@ function LogActivity({ userId, profile, onActivityLogged }: LogActivityProps) {
       if (error) throw error
 
       // 2) Update the user's XP in their profile
+      const newXP = (profile?.xp ?? 0) + xpEarned;
+      const newLevel = Math.floor(newXP / 1000) + 1;
       await supabase
         .from("profiles")
         .update({
-          xp: (profile?.xp ?? 0) + xpEarned,
-          study_hours: (profile?.study_hours ?? 0) + parsedDuration / 60,
+            xp: newXP,
+            level: newLevel,
+            study_hours: (profile?.study_hours ?? 0) + parsedDuration / 60,
         })
-        .eq("id", userId)
+        .eq("id", userId);
 
       // Reset form fields
       setActivityType("")
@@ -90,8 +93,8 @@ function LogActivity({ userId, profile, onActivityLogged }: LogActivityProps) {
     <>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Activity Type</label>
-          <div className="grid grid-cols-3 gap-3">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Session Type</label>
+          <div className="grid grid-cols-4 gap-3">
             <button
               type="button"
               className={`flex flex-col items-center justify-center p-3 border rounded-lg transition-colors ${
@@ -130,6 +133,19 @@ function LogActivity({ userId, profile, onActivityLogged }: LogActivityProps) {
               <PenTool className={`h-6 w-6 ${activityType === "Grammar" ? "text-green-500" : "text-gray-400"}`} />
               <span className="mt-1 text-sm font-medium">Grammar</span>
             </button>
+
+            <button
+              type="button"
+              className={`flex flex-col items-center justify-center p-3 border rounded-lg transition-colors ${
+                activityType === "Speaking"
+                  ? "bg-purple-50 border-purple-200 text-purple-700"
+                  : "border-gray-200 hover:bg-gray-50"
+              }`}
+              onClick={() => setActivityType("Speaking")}
+            >
+              <Mic className={`h-6 w-6 ${activityType === "Speaking" ? "text-purple-500" : "text-gray-400"}`} />
+              <span className="mt-1 text-sm font-medium">Speaking</span>
+            </button>
           </div>
         </div>
 
@@ -161,13 +177,13 @@ function LogActivity({ userId, profile, onActivityLogged }: LogActivityProps) {
               onChange={(e) => setDuration(e.target.value)}
               required
             />
-            <div className="absolute inset-y-0 right-5 flex items-center pr-3 pointer-events-none">
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
               <span className="text-gray-500 sm:text-sm">min</span>
             </div>
           </div>
           {estimatedXP > 0 && (
             <div className="mt-2 flex items-center">
-              <p className="text-sm text-gray-600">You'll earn approximately {estimatedXP} XP for this activity</p>
+              <p className="text-sm text-gray-600">You'll earn approximately {estimatedXP} XP for this session</p>
               <button
                 type="button"
                 onClick={() => setShowXPInfoModal(true)}
@@ -205,7 +221,7 @@ function LogActivity({ userId, profile, onActivityLogged }: LogActivityProps) {
               : "Select an activity type and enter a duration to see the calculation."}
           </div>
           <p className="text-sm text-gray-600 mb-4">
-            Different activities have different multipliers to reward more challenging study methods. Longer study
+            Different sessions have different multipliers to reward more challenging study methods. Longer study
             sessions also earn bonus XP to encourage deeper learning.
           </p>
           <button

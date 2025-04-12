@@ -11,6 +11,7 @@ export function calculateXP(activityType: string, durationMinutes: number): numb
       Reading: 1.2, // Reading gives 20% more XP
       Listening: 1.1, // Listening gives 10% more XP
       Grammar: 1.5, // Grammar gives 50% more XP (it's harder!)
+      Speaking: 1.4, // Speaking gives 40% more XP (active production)
     }
   
     // Apply activity type multiplier
@@ -41,6 +42,7 @@ export function calculateXP(activityType: string, durationMinutes: number): numb
       Reading: 1.2,
       Listening: 1.1,
       Grammar: 1.5,
+      Speaking: 1.4,
     }
   
     const multiplier = multipliers[activityType] || 1
