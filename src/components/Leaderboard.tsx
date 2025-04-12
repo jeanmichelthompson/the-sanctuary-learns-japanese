@@ -1,20 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
 import { supabase } from "../supabaseClient"
-import { Link } from "react-router-dom"
-import { BookOpen, Clock, Crown, Headphones, Home, LogOut, Medal, Menu, Mic, PenTool, Trophy, User } from "lucide-react"
 import { useAuth } from "../context/AuthContext"
+import { Header } from "./Header"
+import { Award, BookOpen, Clock, Crown, Headphones, Medal, Mic, PenTool, Trophy, User } from "lucide-react"
 
 function Leaderboard() {
   const [profiles, setProfiles] = useState<any[]>([])
   const [activities, setActivities] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isActivitiesLoading, setIsActivitiesLoading] = useState(true)
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
   useAuth()
 
   useEffect(() => {
@@ -50,10 +47,6 @@ function Leaderboard() {
     fetchRecentActivities()
   }, [])
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-  }
-
   // Helper function to get the appropriate icon for each activity type
   const getActivityIcon = (activityType: string) => {
     switch (activityType) {
@@ -65,6 +58,8 @@ function Leaderboard() {
         return <PenTool className="h-5 w-5 text-green-500" />
       case "Speaking":
         return <Mic className="h-5 w-5 text-purple-500" />
+      case "Milestone":
+        return <Award className="h-5 w-5 text-amber-500" />
       default:
         return <BookOpen className="h-5 w-5 text-gray-500" />
     }
@@ -90,99 +85,42 @@ function Leaderboard() {
     }
   }
 
+  // Helper function to format activity description
+  const formatActivityDescription = (activity: any) => {
+    if (activity.activity_type === "Milestone") {
+      return (
+        <p className="text-sm text-gray-700 mt-1">
+          <span className="font-medium text-amber-600">Achieved milestone:</span>{" "}
+          <span className="font-medium">{activity.description.replace("Achieved: ", "")}</span>
+        </p>
+      )
+    }
+
+    return (
+      <p className="text-sm text-gray-700 mt-1">
+        Studied <span className="font-medium">{activity.activity_type}</span> for{" "}
+        <span className="font-medium">{activity.duration} minutes</span>
+        {activity.description && (
+          <>
+            <span className="mx-1">-</span>
+            <span className="italic">{activity.description}</span>
+          </>
+        )}
+      </p>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center">
-              <Languages className="h-8 w-8 text-violet-600" />
-              <h1 className="ml-2 text-xl font-bold text-gray-900">The Sanctuary</h1>
-            </div>
-
-            <div className="hidden md:flex items-center space-x-4">
-              <Link
-                to="/"
-                className="text-gray-700 hover:text-violet-600 px-3 py-2 rounded-md text-sm font-medium flex items-center"
-              >
-                <Home className="h-4 w-4 mr-1" />
-                Home
-              </Link>
-              <Link
-                to="/leaderboard"
-                className="text-violet-600 px-3 py-2 rounded-md text-sm font-medium flex items-center"
-              >
-                <Trophy className="h-4 w-4 mr-1" />
-                Leaderboard
-              </Link>
-              <Link
-                to="/resources"
-                className="text-gray-700 hover:text-violet-600 px-3 py-2 rounded-md text-sm font-medium flex items-center"
-              >
-                <BookOpen className="h-4 w-4 mr-1" />
-                Resources
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="text-gray-700 hover:text-violet-600 px-3 py-2 rounded-md text-sm font-medium flex items-center"
-              >
-                <LogOut className="h-4 w-4 mr-1" />
-                Logout
-              </button>
-            </div>
-
-            <div className="md:hidden">
-              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-gray-700 hover:text-violet-600 p-2">
-                <Menu className="h-6 w-6" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile menu */}
-        {isMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-200 py-2">
-            <div className="px-4 space-y-1">
-              <Link
-                to="/"
-                className="text-gray-700 hover:text-violet-600 px-3 py-2 rounded-md text-base font-medium flex items-center"
-              >
-                <Home className="h-5 w-5 mr-2" />
-                Home
-              </Link>
-              <Link
-                to="/leaderboard"
-                className="text-violet-600 px-3 py-2 rounded-md text-base font-medium flex items-center"
-              >
-                <Trophy className="h-5 w-5 mr-2" />
-                Leaderboard
-              </Link>
-              <Link
-                to="/resources"
-                className="text-gray-700 hover:text-violet-600 px-3 py-2 rounded-md text-base font-medium flex items-center"
-              >
-                <BookOpen className="h-5 w-5 mr-2" />
-                Resources
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="w-full text-left text-gray-700 hover:text-violet-600 px-3 py-2 rounded-md text-base font-medium flex items-center"
-              >
-                <LogOut className="h-5 w-5 mr-2" />
-                Logout
-              </button>
-            </div>
-          </div>
-        )}
-      </header>
+      <Header activeItem="leaderboard" />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Leaderboard Section */}
         <div className="bg-white shadow rounded-xl overflow-hidden">
           <div className="px-6 py-5 border-b border-gray-100 flex items-center">
             <Trophy className="h-6 w-6 text-amber-500 mr-3" />
-            <h1 className="text-xl font-bold text-gray-900">Leaderboard</h1>
+            <h1 className="text-xl font-bold text-gray-900">Community</h1>
           </div>
 
           {isLoading ? (
@@ -261,7 +199,7 @@ function Leaderboard() {
                         {profile.study_hours > 0 && (
                           <>
                             <span className="mx-2">•</span>
-                            <span>{profile.study_hours} hours studied</span>
+                            <span>{(profile.study_hours).toFixed(2)} hours studied</span>
                           </>
                         )}
                       </div>
@@ -285,7 +223,7 @@ function Leaderboard() {
         <div className="bg-white shadow rounded-xl overflow-hidden">
           <div className="px-6 py-5 border-b border-gray-100 flex items-center">
             <Clock className="h-6 w-6 text-violet-500 mr-3" />
-            <h1 className="text-xl font-bold text-gray-900">Community Activity</h1>
+            <h1 className="text-xl font-bold text-gray-900">Recent Activity</h1>
           </div>
 
           {isActivitiesLoading ? (
@@ -321,16 +259,7 @@ function Leaderboard() {
                         <span className="mx-2 text-gray-400">•</span>
                         <p className="text-xs text-gray-500">{formatDate(activity.logged_at)}</p>
                       </div>
-                      <p className="text-sm text-gray-700 mt-1">
-                        Studied <span className="font-medium">{activity.activity_type}</span> for{" "}
-                        <span className="font-medium">{activity.duration} minutes</span>
-                        {activity.description && (
-                          <>
-                            <span className="mx-1">-</span>
-                            <span className="italic">{activity.description}</span>
-                          </>
-                        )}
-                      </p>
+                      {formatActivityDescription(activity)}
                       <div className="mt-1 flex items-center text-xs text-gray-500">
                         <span className="flex items-center text-amber-500">
                           <Trophy className="h-3.5 w-3.5 mr-1" />
@@ -346,31 +275,6 @@ function Leaderboard() {
         </div>
       </main>
     </div>
-  )
-}
-
-// Add missing icon component
-function Languages(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m5 8 6 6" />
-      <path d="m4 14 6-6 2-3" />
-      <path d="M2 5h12" />
-      <path d="M7 2h1" />
-      <path d="m22 22-5-10-5 10" />
-      <path d="M14 18h6" />
-    </svg>
   )
 }
 

@@ -6,6 +6,7 @@ import Dashboard from "./components/Dashboard"
 import Login from "./components/Login"
 import Leaderboard from "./components/Leaderboard"
 import Resources from "./components/Resources"
+import MilestonesPage from "./components/MilestonesPage"
 import { AuthProvider, useAuth } from "./context/AuthContext"
 import { type JSX, StrictMode } from "react"
 
@@ -57,6 +58,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Resources />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/milestones"
+              element={
+                <ProtectedRoute>
+                  <MilestonesPage />
                 </ProtectedRoute>
               }
             />
