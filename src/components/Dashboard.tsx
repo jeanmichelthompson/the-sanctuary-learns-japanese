@@ -411,7 +411,10 @@ function Dashboard() {
               <div className="px-6 py-4 border-b border-gray-100">
                 <h3 className="text-lg font-semibold text-gray-900">Recent Sessions</h3>
               </div>
-              <div className="divide-y divide-gray-100">
+              <div
+                className="divide-y divide-gray-100 custom-scrollbar"
+                style={{ maxHeight: "400px", overflowY: "auto" }}
+              >
                 {activities.length === 0 ? (
                   <div className="px-6 py-8 text-center">
                     <BookOpen className="h-12 w-12 text-gray-300 mx-auto mb-3" />
@@ -439,7 +442,7 @@ function Dashboard() {
                           <p className="text-sm text-gray-600">{activity.description}</p>
                           <p className="text-xs text-gray-500 mt-1">
                             {new Date(activity.logged_at).toLocaleString()}
-                            {activity.duration > 0 && ` • ${activity.duration} min`} • {activity.xp_earned}
+                            {activity.duration > 0 && ` • ${activity.duration} min`} • {activity.xp_earned} XP
                           </p>
                         </div>
                       </div>
@@ -468,7 +471,10 @@ function Dashboard() {
                 View All <span className="ml-1">→</span>
               </Link>
             </div>
-            <div className="divide-y divide-gray-100">
+            <div
+              className="divide-y divide-gray-100 custom-scrollbar"
+              style={{ maxHeight: "400px", overflowY: "auto" }}
+            >
               {nextMilestonesToShow.length === 0 ? (
                 <div className="px-6 py-8 text-center">
                   <Award className="h-12 w-12 text-gray-300 mx-auto mb-3" />

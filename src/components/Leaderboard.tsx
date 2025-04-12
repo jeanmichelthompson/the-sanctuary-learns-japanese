@@ -143,7 +143,7 @@ function Leaderboard() {
               <p className="text-gray-500">No users found.</p>
             </div>
           ) : (
-            <ul className="divide-y divide-gray-100">
+            <ul className="divide-y divide-gray-100 custom-scrollbar" style={{ maxHeight: "400px", overflowY: "auto" }}>
               {profiles.map((profile, index) => (
                 <li key={profile.id} className="px-6 py-4">
                   <div className="flex items-center">
@@ -246,7 +246,7 @@ function Leaderboard() {
               <p className="text-gray-500">No recent activity found.</p>
             </div>
           ) : (
-            <ul className="divide-y divide-gray-100">
+            <ul className="divide-y divide-gray-100 custom-scrollbar" style={{ maxHeight: "400px", overflowY: "auto" }}>
               {activities.map((activity) => (
                 <li key={activity.id} className="px-6 py-4">
                   <div className="flex items-start">

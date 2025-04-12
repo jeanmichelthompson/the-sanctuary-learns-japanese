@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
@@ -222,7 +223,7 @@ function MilestonesPage() {
                 <Clock className="h-5 w-5 mr-2 text-amber-500" />
                 Practice & Study Milestones
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 custom-scrollbar">
                 {groupedMilestones.practice.map((milestone) => (
                   <MilestoneCard
                     key={milestone.id}
