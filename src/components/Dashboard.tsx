@@ -473,7 +473,6 @@ function Dashboard() {
             </div>
             <div
               className="divide-y divide-gray-100 custom-scrollbar"
-              style={{ maxHeight: "400px", overflowY: "auto" }}
             >
               {nextMilestonesToShow.length === 0 ? (
                 <div className="px-6 py-8 text-center">
