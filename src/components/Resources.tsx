@@ -5,6 +5,8 @@ import { BookOpen, ExternalLink, Headphones, Lightbulb, List, Pencil, Play } fro
 import { useEffect, useRef, useState } from "react"
 import { useAuth } from "../context/AuthContext"
 import { Header } from "./Header"
+import { BackToTop } from "./BackToTop"
+
 function Resources() {
   const [] = useState(false)
   useAuth()
@@ -47,7 +49,7 @@ function Resources() {
     }
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [sectionRefs])
+  }, [])
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -225,22 +227,24 @@ function Resources() {
                       If you're just starting out and want a clear path to follow, here's what you should do:
                     </p>
                     <ol className="space-y-3">
-                    <li className="flex items-start">
+                      <li className="flex items-start">
                         <span className="flex items-center justify-center bg-amber-200 text-amber-800 font-bold rounded-full h-6 w-6 mr-3 mt-0.5 flex-shrink-0">
                           1
                         </span>
                         <div>
-                          <span className="font-semibold text-amber-900">Learn Kana (Hiragana & Katakana)</span>
+                          <span className="font-semibold text-amber-900">Getting Started</span>
                           <p className="text-amber-800 mt-1">
-                            Read                      
+                            Read
                             <a
-                                href="https://learnjapanese.moe/guide"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-violet-600 hover:text-violet-800 font-medium"
+                              href="https://learnjapanese.moe/guide"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-violet-600 hover:text-violet-800 font-medium"
                             >
-                                {" "}The Moe Way Guide
-                            </a>.
+                              {" "}
+                              The Moe Way Guide
+                            </a>
+                            .
                           </p>
                         </div>
                       </li>
@@ -304,17 +308,18 @@ function Resources() {
                   <div ref={sectionRefs.introduction} id="introduction">
                     <h2 className="text-xl font-semibold text-violet-700 mb-3">Introduction</h2>
                     <p>
-                    <a
+                      <a
                         href="https://learnjapanese.moe/guide"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-violet-600 hover:text-violet-800 font-medium"
-                    >
+                      >
                         LearnJapanese.moe
-                    </a>{" "} (also known as The Moe Way guide) is an extensive online guide for self-learners
-                      of Japanese. It aims to provide a fast, efficient, and enjoyable path to learning Japanese by
-                      focusing on immersion and smart use of tools. You should read the entire guide, but I've condensed
-                      it here for convenience.
+                      </a>{" "}
+                      (also known as The Moe Way guide) is an extensive online guide for self-learners of Japanese. It
+                      aims to provide a fast, efficient, and enjoyable path to learning Japanese by focusing on
+                      immersion and smart use of tools. You should read the entire guide, but I've condensed it here for
+                      convenience.
                     </p>
                   </div>
                   {/* Core Principles Section */}
@@ -417,8 +422,8 @@ function Resources() {
                     </div>
                   </div>
 
-          {/* Vocabulary & Kanji Section */}
-                  <div        
+                  {/* Vocabulary & Kanji Section */}
+                  <div
                     ref={sectionRefs.vocabulary}
                     id="vocabulary"
                     className="mb-6 border border-gray-200 rounded-lg overflow-hidden"
@@ -699,8 +704,11 @@ function Resources() {
           </div>
         </div>
       </main>
+
+      {/* Back to Top Button */}
+      <BackToTop threshold={300} />
     </div>
   )
 }
-// Add missing icon components
+
 export default Resources
