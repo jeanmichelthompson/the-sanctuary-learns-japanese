@@ -8,8 +8,21 @@ import { supabase } from "../supabaseClient"
 import LogActivity from "./LogActivity"
 import { useAuth } from "../context/AuthContext"
 import { Link } from "react-router-dom"
-import { Award, BookOpen, Clock, Crown, Edit2, Home, LogOut, Menu, Trophy, User } from "lucide-react"
-import { Modal, SuccessModal } from "./Modal"
+import {
+  Award,
+  BookOpen,
+  Clock,
+  Crown,
+  Edit2,
+  Home,
+  LogOut,
+  Menu,
+  MoreVertical,
+  Trash2,
+  Trophy,
+  User,
+} from "lucide-react"
+import { Modal, SuccessModal, ConfirmModal } from "./Modal"
 
 function Dashboard() {
   const { user } = useAuth()
@@ -21,6 +34,8 @@ function Dashboard() {
   const [newUsername, setNewUsername] = useState("")
   const [successMessage, setSuccessMessage] = useState("")
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const [showClearConfirmModal, setShowClearConfirmModal] = useState(false)
 
   // Function to fetch profile data
   const fetchProfile = useCallback(async () => {
@@ -58,10 +73,15 @@ function Dashboard() {
 
   // Function to fetch activities
   const fetchActivities = useCallback(async () => {
-    const { data, error } = await supabase.from("study_logs").select("*").order("logged_at", { ascending: false })
-    if (error) console.error(error)
-    else setActivities(data)
-  }, [])
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("study_logs")
+      .select("*")
+      .eq("user_id", user.id) // filter by the logged in user
+      .order("logged_at", { ascending: false });
+    if (error) console.error(error);
+    else setActivities(data);
+  }, [user]);
 
   // Function to fetch milestones
   const fetchMilestones = useCallback(async () => {
@@ -109,6 +129,62 @@ function Dashboard() {
     fetchActivities()
   }, [fetchProfile, fetchActivities])
 
+  // Function to clear all user progress
+  const handleClearAllProgress = async () => {
+    if (!user || !profile) return
+
+    try {
+      // 1. Delete all study logs for this user
+      const { error: logsError } = await supabase.from("study_logs").delete().eq("user_id", user.id)
+
+      if (logsError) throw logsError
+
+      // 2. Delete all user milestones
+      const { error: milestonesError } = await supabase.from("user_milestones").delete().eq("user_id", user.id)
+
+      if (milestonesError) throw milestonesError
+
+      // 3. Reset user profile stats
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          xp: 0,
+          level: 1,
+          study_hours: 0,
+        })
+        .eq("id", user.id)
+
+      if (profileError) throw profileError
+
+      // 4. Refresh data
+      fetchProfile()
+      fetchActivities()
+      fetchMilestones()
+
+      // 5. Show success message
+      setSuccessMessage("All progress has been cleared successfully!")
+      setShowSuccessModal(true)
+    } catch (error) {
+      console.error("Error clearing progress:", error)
+      alert("Failed to clear progress. Please try again.")
+    }
+  }
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (isUserMenuOpen && !target.closest("[data-user-menu]")) {
+        setIsUserMenuOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [isUserMenuOpen])
+
   if (!profile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -147,6 +223,13 @@ function Dashboard() {
                 <Trophy className="h-4 w-4 mr-1" />
                 Leaderboard
               </Link>
+              <Link
+                to="/resources"
+                className="text-gray-700 hover:text-violet-600 px-3 py-2 rounded-md text-sm font-medium flex items-center"
+              >
+                <BookOpen className="h-4 w-4 mr-1" />
+                Resources
+              </Link>
               <button
                 onClick={handleLogout}
                 className="text-gray-700 hover:text-violet-600 px-3 py-2 rounded-md text-sm font-medium flex items-center"
@@ -182,6 +265,13 @@ function Dashboard() {
                 <Trophy className="h-5 w-5 mr-2" />
                 Leaderboard
               </Link>
+              <Link
+                to="/resources"
+                className="text-gray-700 hover:text-violet-600 px-3 py-2 rounded-md text-base font-medium flex items-center"
+              >
+                <BookOpen className="h-5 w-5 mr-2" />
+                Resources
+              </Link>
               <button
                 onClick={handleLogout}
                 className="w-full text-left text-gray-700 hover:text-violet-600 px-3 py-2 rounded-md text-base font-medium flex items-center"
@@ -198,27 +288,55 @@ function Dashboard() {
         {/* Profile card */}
         <div className="bg-white shadow rounded-xl overflow-hidden mb-6">
           <div className="bg-gradient-to-r from-violet-500 to-purple-600 px-6 py-4">
-            <div className="flex items-center">
-              <div className="bg-white rounded-full p-1 mr-4">
-                <User className="h-12 w-12 text-violet-600" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="bg-white rounded-full p-1 mr-4">
+                  <User className="h-12 w-12 text-violet-600" />
+                </div>
+                <div className="text-white">
+                  <div className="flex items-center">
+                    <h2 className="text-xl font-bold">{profile.username}</h2>
+                    <button
+                      onClick={() => setIsEditingUsername(true)}
+                      className="ml-2 p-1 rounded-full hover:bg-white/20 transition-colors"
+                      aria-label="Edit username"
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="flex items-center mt-1">
+                    <Crown className="h-4 w-4 mr-1" />
+                    <span>Level {profile.level}</span>
+                    <span className="mx-2">•</span>
+                    <span>{profile.xp} XP</span>
+                  </div>
+                </div>
               </div>
-              <div className="text-white">
-                <div className="flex items-center">
-                  <h2 className="text-xl font-bold">{profile.username}</h2>
-                  <button
-                    onClick={() => setIsEditingUsername(true)}
-                    className="ml-2 p-1 rounded-full hover:bg-white/20 transition-colors"
-                    aria-label="Edit username"
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </button>
-                </div>
-                <div className="flex items-center mt-1">
-                  <Crown className="h-4 w-4 mr-1" />
-                  <span>Level {profile.level}</span>
-                  <span className="mx-2">•</span>
-                  <span>{profile.xp} XP</span>
-                </div>
+
+              {/* User menu */}
+              <div className="relative" data-user-menu>
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="p-2 rounded-full text-white hover:bg-white/20 transition-colors"
+                  aria-label="User menu"
+                >
+                  <MoreVertical className="h-5 w-5" />
+                </button>
+
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 py-1 border border-gray-100">
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false)
+                        setShowClearConfirmModal(true)
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 flex items-center"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Clear All Progress
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -284,6 +402,8 @@ function Dashboard() {
                             <BookOpen className="h-5 w-5 text-pink-500" />
                           ) : activity.activity_type === "Listening" ? (
                             <Headphones className="h-5 w-5 text-blue-500" />
+                          ) : activity.activity_type === "Speaking" ? (
+                            <Mic className="h-5 w-5 text-purple-500" />
                           ) : (
                             <PenTool className="h-5 w-5 text-green-500" />
                           )}
@@ -408,6 +528,17 @@ function Dashboard() {
 
       {/* Success Modal */}
       <SuccessModal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} message={successMessage} />
+
+      {/* Clear Progress Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showClearConfirmModal}
+        onClose={() => setShowClearConfirmModal(false)}
+        onConfirm={handleClearAllProgress}
+        title="Clear All Progress"
+        message="Are you sure you want to clear all your progress? This will reset your XP, level, study hours, and delete all your study sessions. This action cannot be undone."
+        confirmText="Yes, Clear Everything"
+        cancelText="Cancel"
+      />
     </div>
   )
 }
@@ -462,11 +593,7 @@ function PenTool(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
-      xmlns="http://www.w3.org/  {
-  return (
-    <svg
-      {...props}
-      xmlns="
+      xmlns="http://www.w3.org/2000/svg"
       width="24"
       height="24"
       viewBox="0 0 24 24"
@@ -480,6 +607,27 @@ function PenTool(props: React.SVGProps<SVGSVGElement>) {
       <path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
       <path d="m2 2 7.586 7.586" />
       <circle cx="11" cy="11" r="2" />
+    </svg>
+  )
+}
+
+function Mic(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+      <line x1="12" x2="12" y1="19" y2="22" />
     </svg>
   )
 }

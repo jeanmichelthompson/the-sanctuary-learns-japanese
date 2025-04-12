@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Dashboard from "./components/Dashboard"
 import Login from "./components/Login"
 import Leaderboard from "./components/Leaderboard"
+import Resources from "./components/Resources"
 import { AuthProvider, useAuth } from "./context/AuthContext"
 import { type JSX, StrictMode } from "react"
 
@@ -48,6 +49,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Leaderboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/resources"
+              element={
+                <ProtectedRoute>
+                  <Resources />
                 </ProtectedRoute>
               }
             />
