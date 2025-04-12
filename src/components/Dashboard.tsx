@@ -3,12 +3,13 @@
 import type React from "react"
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { supabase } from "../supabaseClient"
 import LogActivity from "./LogActivity"
 import { useAuth } from "../context/AuthContext"
 import { Link } from "react-router-dom"
-import { Award, BookOpen, Clock, Crown, Home, LogOut, Menu, Trophy, User } from "lucide-react"
+import { Award, BookOpen, Clock, Crown, Edit2, Home, LogOut, Menu, Trophy, User } from "lucide-react"
+import { Modal, SuccessModal } from "./Modal"
 
 function Dashboard() {
   const { user } = useAuth()
@@ -16,64 +17,97 @@ function Dashboard() {
   const [activities, setActivities] = useState<any[]>([])
   const [milestones, setMilestones] = useState<any[]>([])
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isEditingUsername, setIsEditingUsername] = useState(false)
+  const [newUsername, setNewUsername] = useState("")
+  const [successMessage, setSuccessMessage] = useState("")
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
 
-  useEffect(() => {
-    async function fetchProfile() {
-      // Only query if a user exists
-      if (user) {
-        // Query the profile for the current user's id.
-        const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle() // returns null if no row found
+  // Function to fetch profile data
+  const fetchProfile = useCallback(async () => {
+    if (!user) return
 
-        if (error) {
-          console.error("Error fetching profile:", error)
-        } else if (!data) {
-          // No profile found, so upsert (create) a profile row.
-          console.log("No profile found for user. Upserting a new profile.")
-          const { data: upsertedData, error: upsertError } = await supabase
-            .from("profiles")
-            .upsert({
-              id: user.id,
-              username: user.email, // using the email as the default username
-              xp: 0,
-              level: 1,
-              study_hours: 0,
-            })
-            .select("*")
-            .maybeSingle()
+    const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle()
 
-          if (upsertError) {
-            console.error("Error upserting profile:", upsertError)
-          } else if (upsertedData) {
-            setProfile(upsertedData)
-          }
-        } else {
-          // If a profile is returned, set it.
-          setProfile(data)
-        }
+    if (error) {
+      console.error("Error fetching profile:", error)
+    } else if (!data) {
+      console.log("No profile found for user. Upserting a new profile.")
+      const { data: upsertedData, error: upsertError } = await supabase
+        .from("profiles")
+        .upsert({
+          id: user.id,
+          username: user.email,
+          xp: 0,
+          level: 1,
+          study_hours: 0,
+        })
+        .select("*")
+        .maybeSingle()
+
+      if (upsertError) {
+        console.error("Error upserting profile:", upsertError)
+      } else if (upsertedData) {
+        setProfile(upsertedData)
+        setNewUsername(upsertedData.username)
       }
+    } else {
+      setProfile(data)
+      setNewUsername(data.username)
     }
+  }, [user])
 
-    async function fetchActivities() {
-      const { data, error } = await supabase.from("study_logs").select("*").order("logged_at", { ascending: false })
-      if (error) console.error(error)
-      else setActivities(data)
-    }
+  // Function to fetch activities
+  const fetchActivities = useCallback(async () => {
+    const { data, error } = await supabase.from("study_logs").select("*").order("logged_at", { ascending: false })
+    if (error) console.error(error)
+    else setActivities(data)
+  }, [])
 
-    async function fetchMilestones() {
-      // For simplicity, fetch all milestones.
-      const { data, error } = await supabase.from("milestones").select("*")
-      if (error) console.error(error)
-      else setMilestones(data)
-    }
+  // Function to fetch milestones
+  const fetchMilestones = useCallback(async () => {
+    const { data, error } = await supabase.from("milestones").select("*")
+    if (error) console.error(error)
+    else setMilestones(data)
+  }, [])
 
+  // Initial data loading
+  useEffect(() => {
     fetchProfile()
     fetchActivities()
     fetchMilestones()
-  }, [user])
+  }, [fetchProfile, fetchActivities, fetchMilestones, user])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
   }
+
+  const handleUpdateUsername = async () => {
+    if (!profile || !newUsername.trim()) return
+
+    try {
+      const { error } = await supabase.from("profiles").update({ username: newUsername.trim() }).eq("id", profile.id)
+
+      if (error) throw error
+
+      // Update local state
+      setProfile({ ...profile, username: newUsername.trim() })
+      setIsEditingUsername(false)
+
+      // Show success message
+      setSuccessMessage("Username updated successfully!")
+      setShowSuccessModal(true)
+    } catch (error) {
+      console.error("Error updating username:", error)
+      alert("Failed to update username. Please try again.")
+    }
+  }
+
+  // Function to handle activity logging success
+  const handleActivityLogged = useCallback(() => {
+    // Refetch data to show updated information
+    fetchProfile()
+    fetchActivities()
+  }, [fetchProfile, fetchActivities])
 
   if (!profile) {
     return (
@@ -136,7 +170,7 @@ function Dashboard() {
             <div className="px-4 space-y-1">
               <Link
                 to="/"
-                className="text-gray-700 hover:text-violet-600 px-3 py-2 rounded-md text-base font-medium flex items-center"
+                className=" text-gray-700 hover:text-violet-600 px-3 py-2 rounded-md text-base font-medium flex items-center"
               >
                 <Home className="h-5 w-5 mr-2" />
                 Home
@@ -169,7 +203,16 @@ function Dashboard() {
                 <User className="h-12 w-12 text-violet-600" />
               </div>
               <div className="text-white">
-                <h2 className="text-xl font-bold">{profile.username}</h2>
+                <div className="flex items-center">
+                  <h2 className="text-xl font-bold">{profile.username}</h2>
+                  <button
+                    onClick={() => setIsEditingUsername(true)}
+                    className="ml-2 p-1 rounded-full hover:bg-white/20 transition-colors"
+                    aria-label="Edit username"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </button>
+                </div>
                 <div className="flex items-center mt-1">
                   <Crown className="h-4 w-4 mr-1" />
                   <span>Level {profile.level}</span>
@@ -218,7 +261,7 @@ function Dashboard() {
                 <h3 className="text-lg font-semibold text-gray-900">Log Study Activity</h3>
               </div>
               <div className="p-6">
-                <LogActivity userId={profile.id} profile={profile} />
+                <LogActivity userId={profile.id} profile={profile} onActivityLogged={handleActivityLogged} />
               </div>
             </div>
 
@@ -301,11 +344,22 @@ function Dashboard() {
                       <button
                         className="bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white text-sm font-medium py-2 px-4 rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500"
                         onClick={async () => {
-                          const { error } = await supabase
-                            .from("user_milestones")
-                            .insert({ user_id: profile.id, milestone_id: ms.id })
-                          if (error) alert(error.message)
-                          else alert("Milestone claimed!")
+                          try {
+                            const { error } = await supabase
+                              .from("user_milestones")
+                              .insert({ user_id: profile.id, milestone_id: ms.id })
+
+                            if (error) throw error
+
+                            // Show success message
+                            setSuccessMessage("Milestone claimed successfully!")
+                            setShowSuccessModal(true)
+
+                            // Update profile to reflect new XP
+                            fetchProfile()
+                          } catch (error: any) {
+                            alert(error.message || "Failed to claim milestone")
+                          }
                         }}
                       >
                         Claim
@@ -318,6 +372,42 @@ function Dashboard() {
           </div>
         </div>
       </main>
+
+      {/* Edit Username Modal */}
+      <Modal isOpen={isEditingUsername} onClose={() => setIsEditingUsername(false)} title="Edit Username">
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+              Username
+            </label>
+            <input
+              id="username"
+              type="text"
+              value={newUsername}
+              onChange={(e) => setNewUsername(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+              placeholder="Enter your username"
+            />
+          </div>
+          <div className="flex space-x-3">
+            <button
+              onClick={() => setIsEditingUsername(false)}
+              className="flex-1 rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleUpdateUsername}
+              className="flex-1 rounded-md bg-violet-600 px-4 py-2 text-white hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Success Modal */}
+      <SuccessModal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} message={successMessage} />
     </div>
   )
 }
@@ -372,7 +462,11 @@ function PenTool(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
-      xmlns="http://www.w3.org/2000/svg"
+      xmlns="http://www.w3.org/  {
+  return (
+    <svg
+      {...props}
+      xmlns="
       width="24"
       height="24"
       viewBox="0 0 24 24"
