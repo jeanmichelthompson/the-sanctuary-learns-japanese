@@ -23,6 +23,7 @@ import {
 } from "lucide-react"
 import { Modal, SuccessModal, ConfirmModal } from "./Modal"
 import { Header } from "./Header"
+import { Analytics } from "./Analytics"
 
 function Dashboard() {
   const { user } = useAuth()
@@ -369,7 +370,7 @@ function Dashboard() {
                 <Clock className="h-5 w-5 text-violet-500 mr-2" />
                 <div>
                   <p className="text-sm text-gray-500">Total Study Time</p>
-                  <p className="font-semibold">{(profile.study_hours).toFixed(2)} hours</p>
+                  <p className="font-semibold">{profile.study_hours.toFixed(2)} hours</p>
                 </div>
               </div>
 
@@ -471,9 +472,7 @@ function Dashboard() {
                 View All <span className="ml-1">→</span>
               </Link>
             </div>
-            <div
-              className="divide-y divide-gray-100 custom-scrollbar"
-            >
+            <div className="divide-y divide-gray-100 custom-scrollbar">
               {nextMilestonesToShow.length === 0 ? (
                 <div className="px-6 py-8 text-center">
                   <Award className="h-12 w-12 text-gray-300 mx-auto mb-3" />
@@ -530,6 +529,18 @@ function Dashboard() {
                   )
                 })
               )}
+            </div>
+          </div>
+        </div>
+
+        {/* Analytics section - always visible at the bottom */}
+        <div className="mt-6">
+          <div className="bg-white shadow rounded-xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900">Study Analytics</h3>
+            </div>
+            <div className="p-6">
+              <Analytics userId={profile.id} studyLogs={activities} />
             </div>
           </div>
         </div>
