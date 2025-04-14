@@ -5,13 +5,28 @@ import { useState, useEffect } from "react"
 import { supabase } from "../supabaseClient"
 import { useAuth } from "../context/AuthContext"
 import { Header } from "./Header"
-import { Award, BookOpen, Clock, Crown, Headphones, Medal, Mic, PenTool, Trophy, User } from "lucide-react"
+import {
+  Award,
+  BookOpen,
+  Clock,
+  Crown,
+  Headphones,
+  Medal,
+  Mic,
+  PenTool,
+  Trophy,
+  User,
+  ToggleLeft,
+  ToggleRight,
+  Car,
+} from "lucide-react"
 
 function Leaderboard() {
   const [profiles, setProfiles] = useState<any[]>([])
   const [activities, setActivities] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isActivitiesLoading, setIsActivitiesLoading] = useState(true)
+  const [showRaceView, setShowRaceView] = useState(false)
   useAuth()
 
   useEffect(() => {
@@ -110,6 +125,21 @@ function Leaderboard() {
     )
   }
 
+  // Calculate a dynamic target XP that's always ahead of the current leader
+  const calculateDynamicMaxXP = () => {
+    if (profiles.length === 0) return 1000
+
+    // Get the highest XP value
+    const highestXP = profiles[0].xp
+
+    // Set the target to be 30% higher than the current leader
+    // This creates a "moving target" effect where even the leader has room to grow
+    return Math.max(1000, highestXP * 1.3)
+  }
+
+  // Get the dynamic maximum XP
+  const dynamicMaxXP = calculateDynamicMaxXP()
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -118,9 +148,29 @@ function Leaderboard() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Leaderboard Section */}
         <div className="bg-white shadow rounded-xl overflow-hidden">
-          <div className="px-6 py-5 border-b border-gray-100 flex items-center">
-            <Trophy className="h-6 w-6 text-amber-500 mr-3" />
-            <h1 className="text-xl font-bold text-gray-900">Community</h1>
+          <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+            <div className="flex items-center">
+              <Trophy className="h-6 w-6 text-amber-500 mr-3" />
+              <h1 className="text-xl font-bold text-gray-900">Community</h1>
+            </div>
+
+            {/* Toggle switch for race view */}
+            <button
+              onClick={() => setShowRaceView(!showRaceView)}
+              className="flex items-center text-sm font-medium text-gray-600 hover:text-violet-600 transition-colors"
+            >
+              {showRaceView ? (
+                <>
+                  <ToggleRight className="h-5 w-5 mr-1.5 text-violet-600" />
+                  Race View
+                </>
+              ) : (
+                <>
+                  <ToggleLeft className="h-5 w-5 mr-1.5" />
+                  Race View
+                </>
+              )}
+            </button>
           </div>
 
           {isLoading ? (
@@ -142,7 +192,116 @@ function Leaderboard() {
               <User className="h-12 w-12 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-500">No users found.</p>
             </div>
+          ) : showRaceView ? (
+            // Race car view
+            <div className="p-6 space-y-8">
+              <div className="relative">
+                {/* Race track */}
+                <div className="space-y-6 py-4">
+                  {profiles.map((profile, index) => {
+                    // Calculate progress percentage with the dynamic max
+                    // This ensures everyone is gradually moving right as they progress
+                    const rawProgress = (profile.xp / dynamicMaxXP) * 100
+
+                    // Ensure minimum spacing for cars at the start (20% for 0 XP)
+                    // and maximum of 85% to leave room for growth
+                    const minProgress = 20
+                    const maxProgress = 85
+
+                    // Scale the progress between min and max
+                    const progress =
+                      profile.xp === 0 ? minProgress : minProgress + (rawProgress * (maxProgress - minProgress)) / 100
+
+                    // Calculate car position to ensure it stays inside the progress bar
+                    // Adjust by 4.5% (half the car width) to center the car within the progress
+                    const carPosition = Math.max(4.5, progress - 6)
+
+                    // Determine car and track colors based on position
+                    const carColor =
+                      index === 0
+                        ? "text-amber-500"
+                        : index === 1
+                          ? "text-gray-600"
+                          : index === 2
+                            ? "text-amber-700"
+                            : "text-violet-600"
+
+                    const trackColor =
+                      index === 0
+                        ? "bg-amber-100"
+                        : index === 1
+                          ? "bg-gray-100"
+                          : index === 2
+                            ? "bg-amber-50"
+                            : "bg-violet-50"
+
+                    const progressColor =
+                      index === 0
+                        ? "bg-amber-200"
+                        : index === 1
+                          ? "bg-gray-200"
+                          : index === 2
+                            ? "bg-amber-200/70"
+                            : "bg-violet-200"
+
+                    return (
+                      <div key={profile.id} className="relative">
+                        {/* Lane */}
+                        <div
+                          className={`h-14 w-full ${trackColor} rounded-full relative overflow-hidden border border-gray-200`}
+                        >
+                          {/* Progress track */}
+                          <div
+                            className={`absolute top-0 left-0 h-full ${progressColor} rounded-r-full`}
+                            style={{ width: `${progress}%` }}
+                          ></div>
+
+                          {/* Finish line pattern */}
+                          <div className="absolute top-0 right-0 h-full w-8 flex items-center justify-center">
+                            <div className="h-full w-full flex flex-col">
+                              {[...Array(7)].map((_, i) => (
+                                <div key={i} className="flex-1 bg-black/10 odd:bg-transparent"></div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* User info with position number on the left */}
+                          <div className="absolute top-0 left-6 h-full flex items-center">
+                            <div className="flex items-center">
+                              <span className="flex items-center justify-center h-5 w-5 rounded-full bg-white text-xs font-bold mr-2 border border-gray-300 shadow-sm">
+                                {index + 1}
+                              </span>
+                              <p className="text-sm font-medium text-gray-900">{profile.username}</p>
+                            </div>
+                          </div>
+
+                          {/* XP display on the right */}
+                          <div className="absolute top-0 right-12 h-full flex items-center">
+                            <span className="text-xs bg-white/80 px-2 py-0.5 rounded-full text-gray-700 shadow-sm">
+                              {profile.xp} XP
+                            </span>
+                          </div>
+
+                          {/* Car - positioned to stay inside the progress bar */}
+                          <div className="absolute top-0 h-full flex items-center" style={{ left: `${carPosition}%` }}>
+                            <Car className={`h-9 w-9 ${carColor}`} />
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="text-center">
+                <div className="inline-flex items-center px-4 py-2 bg-white rounded-full shadow-sm border border-gray-200">
+                  <Trophy className="h-4 w-4 text-amber-500 mr-2" />
+                  <span className="text-sm text-gray-700">Race to Japanese Fluency!</span>
+                </div>
+              </div>
+            </div>
           ) : (
+            // Standard leaderboard view
             <ul className="divide-y divide-gray-100 custom-scrollbar" style={{ maxHeight: "400px", overflowY: "auto" }}>
               {profiles.map((profile, index) => (
                 <li key={profile.id} className="px-6 py-4">
@@ -199,7 +358,7 @@ function Leaderboard() {
                         {profile.study_hours > 0 && (
                           <>
                             <span className="mx-2">•</span>
-                            <span>{(profile.study_hours).toFixed(2)} hours studied</span>
+                            <span>{profile.study_hours.toFixed(2)} hours studied</span>
                           </>
                         )}
                       </div>
