@@ -20,6 +20,7 @@ import {
   List,
   Trash2,
   User,
+  Star,
 } from "lucide-react"
 import { Modal, SuccessModal, ConfirmModal } from "./Modal"
 import { Header } from "./Header"
@@ -273,6 +274,7 @@ function Dashboard() {
 
   // Group milestones by category
   const groupedMilestones = {
+    main: milestones.filter((m) => m.title.includes("Moe") || m.title.includes("Anki")),
     writing: milestones.filter(
       (m) => m.title.includes("Hiragana") || m.title.includes("Katakana") || m.title.includes("Kanji"),
     ),
@@ -293,6 +295,7 @@ function Dashboard() {
   }
 
   const nextMilestones = {
+    main: getNextMilestone(groupedMilestones.main),
     writing: getNextMilestone(groupedMilestones.writing),
     vocabulary: getNextMilestone(groupedMilestones.vocabulary),
     grammar: getNextMilestone(groupedMilestones.grammar),
@@ -484,7 +487,10 @@ function Dashboard() {
                   let CategoryIcon = Award
                   let iconColor = "text-amber-500"
 
-                  if (groupedMilestones.writing.some((m) => m.id === ms.id)) {
+                  if (groupedMilestones.main.some((m) => m.id === ms.id)) {
+                    CategoryIcon = Star
+                    iconColor = "text-yellow-500"
+                  } else if (groupedMilestones.writing.some((m) => m.id === ms.id)) {
                     CategoryIcon = Pencil
                     iconColor = "text-pink-500"
                   } else if (groupedMilestones.vocabulary.some((m) => m.id === ms.id)) {

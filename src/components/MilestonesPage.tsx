@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from "react"
 import { supabase } from "../supabaseClient"
 import { useAuth } from "../context/AuthContext"
 import { Link } from "react-router-dom"
-import { Award, Clock, List, Pencil, BookOpen } from "lucide-react"
+import { Award, Clock, List, Pencil, Star } from "lucide-react"
 import { MilestoneCard } from "./MilestoneCard"
 import { Header } from "./Header"
 
@@ -78,11 +78,11 @@ function MilestonesPage() {
 
   // Group milestones by category
   const groupedMilestones = {
+    main: milestones.filter((m) => m.title.includes("Moe") || m.title.includes("Anki")),
     writing: milestones.filter(
       (m) => m.title.includes("Hiragana") || m.title.includes("Katakana") || m.title.includes("Kanji"),
     ),
-    vocabulary: milestones.filter((m) => m.title.includes("Vocabulary") || m.title.includes("JLPT")),
-    grammar: milestones.filter((m) => m.title.includes("Grammar")),
+    grammar: milestones.filter((m) => m.title.includes("Grammar") || m.title.includes("Youtube")),
     practice: milestones.filter(
       (m) =>
         m.title.includes("Conversation") ||
@@ -160,6 +160,27 @@ function MilestonesPage() {
           </div>
         ) : (
           <div className="space-y-8">
+            {/* Main Milestones */}
+            {groupedMilestones.main.length > 0 && (
+              <section>
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                  <Star className="h-5 w-5 mr-2 text-yellow-500" />
+                  Main Milestones
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {groupedMilestones.main.map((milestone) => (
+                    <MilestoneCard
+                      key={milestone.id}
+                      milestone={milestone}
+                      isClaimed={isMilestoneClaimed(milestone.id)}
+                      userId={user.id}
+                      onMilestoneClaimed={fetchMilestones}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
             {/* Writing System Milestones */}
             <section>
               <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
@@ -168,25 +189,6 @@ function MilestonesPage() {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {groupedMilestones.writing.map((milestone) => (
-                  <MilestoneCard
-                    key={milestone.id}
-                    milestone={milestone}
-                    isClaimed={isMilestoneClaimed(milestone.id)}
-                    userId={user.id}
-                    onMilestoneClaimed={fetchMilestones}
-                  />
-                ))}
-              </div>
-            </section>
-
-            {/* Vocabulary Milestones */}
-            <section>
-              <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                <BookOpen className="h-5 w-5 mr-2 text-blue-500" />
-                Vocabulary Milestones
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {groupedMilestones.vocabulary.map((milestone) => (
                   <MilestoneCard
                     key={milestone.id}
                     milestone={milestone}
