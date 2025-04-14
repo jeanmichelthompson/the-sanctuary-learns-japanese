@@ -293,7 +293,6 @@ function PostDetail() {
                   <div className="flex items-start space-x-3">
                     <div className="flex-1">
                       <textarea
-                        placeholder="Add a comment..."
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
                         rows={3}
                         value={newComment}

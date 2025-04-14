@@ -166,7 +166,6 @@ function EditPost() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Give your post a descriptive title"
                   required
                 />
               </div>
@@ -181,7 +180,6 @@ function EditPost() {
                   rows={8}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Share your thoughts, questions, or resources..."
                   required
                 />
               </div>
@@ -199,7 +197,6 @@ function EditPost() {
                       className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
                       value={videoUrl}
                       onChange={(e) => setVideoUrl(e.target.value)}
-                      placeholder="https://www.youtube.com/watch?v=..."
                     />
                     {videoUrl && (
                       <button
