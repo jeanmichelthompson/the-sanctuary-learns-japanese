@@ -20,6 +20,7 @@ import {
   ToggleRight,
   Car,
 } from "lucide-react"
+import { RecentPosts } from "./RecentPosts"
 
 function Leaderboard() {
   const [profiles, setProfiles] = useState<any[]>([])
@@ -377,6 +378,9 @@ function Leaderboard() {
             </ul>
           )}
         </div>
+
+        {/* Recent Forum Posts Section */}
+        <RecentPosts />
 
         {/* Recent Activity Section */}
         <div className="bg-white shadow rounded-xl overflow-hidden">

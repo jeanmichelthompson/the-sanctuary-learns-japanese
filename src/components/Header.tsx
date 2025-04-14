@@ -3,11 +3,11 @@
 import type React from "react"
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { Award, BookOpen, Home, LogOut, Menu, Trophy } from "lucide-react"
+import { Award, BookOpen, Home, LogOut, Menu, Trophy, MessageSquare } from "lucide-react"
 import { supabase } from "../supabaseClient"
 
 interface HeaderProps {
-  activeItem?: "home" | "leaderboard" | "resources" | "milestones"
+  activeItem?: "home" | "leaderboard" | "resources" | "milestones" | "forum"
 }
 
 export function Header({ activeItem }: HeaderProps) {
@@ -44,6 +44,15 @@ export function Header({ activeItem }: HeaderProps) {
             >
               <Trophy className="h-4 w-4 mr-1" />
               Community
+            </Link>
+            <Link
+              to="/forum"
+              className={`${
+                activeItem === "forum" ? "text-violet-600" : "text-gray-700 hover:text-violet-600"
+              } px-3 py-2 rounded-md text-sm font-medium flex items-center`}
+            >
+              <MessageSquare className="h-4 w-4 mr-1" />
+              Forum
             </Link>
             <Link
               to="/resources"
@@ -101,6 +110,15 @@ export function Header({ activeItem }: HeaderProps) {
             >
               <Trophy className="h-5 w-5 mr-2" />
               Community
+            </Link>
+            <Link
+              to="/forum"
+              className={`${
+                activeItem === "forum" ? "text-violet-600" : "text-gray-700 hover:text-violet-600"
+              } px-3 py-2 rounded-md text-base font-medium flex items-center`}
+            >
+              <MessageSquare className="h-5 w-5 mr-2" />
+              Forum
             </Link>
             <Link
               to="/resources"

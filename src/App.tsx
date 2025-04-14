@@ -7,6 +7,10 @@ import Login from "./components/Login"
 import Leaderboard from "./components/Leaderboard"
 import Resources from "./components/Resources"
 import MilestonesPage from "./components/MilestonesPage"
+import Forum from "./components/Forum"
+import NewPost from "./components/NewPost"
+import PostDetail from "./components/PostDetail"
+import EditPost from "./components/EditPost"
 import { AuthProvider, useAuth } from "./context/AuthContext"
 import { type JSX, StrictMode } from "react"
 
@@ -66,6 +70,38 @@ function App() {
               element={
                 <ProtectedRoute>
                   <MilestonesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/forum"
+              element={
+                <ProtectedRoute>
+                  <Forum />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/forum/new"
+              element={
+                <ProtectedRoute>
+                  <NewPost />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/forum/post/:id"
+              element={
+                <ProtectedRoute>
+                  <PostDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/forum/edit/:id"
+              element={
+                <ProtectedRoute>
+                  <EditPost />
                 </ProtectedRoute>
               }
             />
