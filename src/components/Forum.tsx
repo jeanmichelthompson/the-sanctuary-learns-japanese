@@ -2,6 +2,7 @@
 "use client"
 
 import type React from "react"
+import removeMarkdown from "remove-markdown"
 
 import { useState, useEffect, useCallback } from "react"
 import { supabase } from "../supabaseClient"
@@ -226,7 +227,7 @@ function Forum() {
                     className="block bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                   >
                     <h3 className="text-lg font-medium text-gray-900 mb-1">{post.title}</h3>
-                    <p className="text-gray-600 line-clamp-2 mb-3">{post.content}</p>
+                    <p className="text-gray-600 line-clamp-2 mb-3">{removeMarkdown(post.content)}</p>
                     <div className="flex items-center text-sm text-gray-500">
                       <span className="font-medium text-gray-700">{post.username || "Anonymous"}</span>
                       <span className="mx-2">•</span>
