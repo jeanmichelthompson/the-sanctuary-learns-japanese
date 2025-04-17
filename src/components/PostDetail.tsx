@@ -11,6 +11,9 @@ import { Link, useParams, useNavigate } from "react-router-dom"
 import { ArrowLeft, MessageSquare, Trash2, Edit2, Send } from "lucide-react"
 import { BackToTop } from "./BackToTop"
 import { ConfirmModal, ErrorModal } from "./Modal"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 
 function PostDetail() {
   const { id } = useParams<{ id: string }>()
@@ -246,8 +249,8 @@ function PostDetail() {
               <span>{formatDate(post.created_at)}</span>
             </div>
 
-            <div className="prose max-w-none mb-6">
-              <p className="whitespace-pre-line">{post.content}</p>
+            <div className="prose prose-violet max-w-none mb-6 [&>h1]:my-3 [&>p]:my-3 [&>ul]:my-3 [&>blockquote]:my-3">
+              <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{post.content}</ReactMarkdown>
             </div>
 
             {post.video_url && (
